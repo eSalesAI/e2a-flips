@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>DealDiff — eBay vs Amazon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bricolage+Grotesque:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --bg:#0c0c0c;
+  --s1:#141414;
+  --s2:#1c1c1c;
+  --s3:#242424;
+  --b1:rgba(255,255,255,0.06);
+  --b2:rgba(255,255,255,0.12);
+  --b3:rgba(255,255,255,0.2);
+  --tx:#f2f2f0;
+  --mu:#72726f;
+  --mu2:#a0a09d;
+  --ebay:#e53238;
+  --amz:#ff9900;
+  --deal:#00d4aa;
+  --deal-bg:rgba(0,212,170,0.1);
+  --deal-border:rgba(0,212,170,0.22);
+  --f:  'Bricolage Grotesque',sans-serif;
+  --fm: 'DM Mono',monospace;
+  --r:12px;
+  --r2:16px;
+}
+
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:var(--f);min-height:100vh;overflow-x:hidden}
+
+/* ─── NAV ─── */
+nav{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;
+  background:rgba(12,12,12,0.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--b1);
+}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.logo-icon{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,var(--ebay),var(--amz));
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:#fff;flex-shrink:0;
+}
+.logo-text{font-size:17px;font-weight:700;letter-spacing:-0.4px}
+.logo-text span{color:var(--deal)}
+.nav-pill{
+  font-family:var(--fm);font-size:10px;
+  background:var(--deal-bg);color:var(--deal);
+  border:1px solid var(--deal-border);
+  padding:4px 10px;border-radius:20px;
+  white-space:nowrap;
+}
+
+/* ─── HERO / FILTERS ─── */
+.hero{
+  padding:28px 20px 0;
+  max-width:680px;margin:0 auto;
+}
+.hero-label{
+  font-family:var(--fm);font-size:11px;color:var(--mu);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;
+}
+.hero h2{font-size:clamp(22px,5vw,30px);font-weight:700;line-height:1.2;letter-spacing:-0.5px;margin-bottom:6px}
+.hero p{font-size:14px;color:var(--mu2);line-height:1.6;margin-bottom:24px}
+
+.filter-card{
+  background:var(--s1);
+  border:1px solid var(--b1);
+  border-radius:var(--r2);
+  padding:20px;
+  display:flex;flex-direction:column;gap:16px;
+  margin-bottom:24px;
+}
+
+.filters-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:400px){.filters-row{grid-template-columns:1fr}}
+
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-family:var(--fm);font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:0.8px}
+
+select{
+  width:100%;
+  background:var(--s2);
+  border:1px solid var(--b2);
+  border-radius:10px;
+  color:var(--tx);
+  font-family:var(--f);
+  font-size:14px;
+  font-weight:500;
+  padding:11px 14px;
+  outline:none;
+  cursor:pointer;
+  -webkit-appearance:none;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2372726f' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  padding-right:36px;
+  transition:border-color 0.2s;
+}
+select:focus{border-color:var(--b3)}
+
+.search-btn{
+  width:100%;
+  background:var(--tx);color:var(--bg);
+  border:none;border-radius:12px;
+  font-family:var(--f);font-size:15px;font-weight:700;
+  padding:14px;cursor:pointer;
+  transition:opacity 0.2s,transform 0.1s;
+  letter-spacing:-0.2px;
+}
+.search-btn:hover{opacity:0.88}
+.search-btn:active{transform:scale(0.98)}
+.search-btn:disabled{opacity:0.35;cursor:not-allowed}
+
+/* ─── STATUS ─── */
+.status-wrap{
+  max-width:680px;margin:0 auto;
+  padding:0 20px;
+}
+.status-bar{
+  display:none;align-items:center;gap:12px;
+  background:var(--deal-bg);border:1px solid var(--deal-border);
+  border-radius:var(--r);padding:14px 16px;margin-bottom:16px;
+}
+.status-bar.on{display:flex}
+.spinner{
+  width:16px;height:16px;flex-shrink:0;
+  border:2px solid rgba(0,212,170,0.25);
+  border-top-color:var(--deal);
+  border-radius:50%;
+  animation:spin 0.7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.status-text{font-family:var(--fm);font-size:12px;color:var(--deal)}
+
+.error-bar{
+  display:none;align-items:center;gap:10px;
+  background:rgba(229,50,56,0.08);border:1px solid rgba(229,50,56,0.2);
+  border-radius:var(--r);padding:14px 16px;margin-bottom:16px;
+  font-family:var(--fm);font-size:12px;color:#f28080;
+}
+.error-bar.on{display:flex}
+
+/* ─── RESULTS ─── */
+.results-wrap{
+  max-width:680px;margin:0 auto;
+  padding:0 20px 60px;
+}
+.results-meta{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;flex-wrap:wrap;gap:10px;
+}
+.results-count{font-family:var(--fm);font-size:12px;color:var(--mu)}
+.results-count b{color:var(--tx);font-weight:500}
+
+.sort-row{display:flex;gap:4px;background:var(--s1);border:1px solid var(--b1);border-radius:8px;padding:3px}
+.sort-btn{
+  font-family:var(--fm);font-size:11px;color:var(--mu);
+  padding:5px 11px;border-radius:6px;cursor:pointer;
+  border:1px solid transparent;transition:all 0.15s;white-space:nowrap;
+}
+.sort-btn.on{background:var(--s2);color:var(--tx);border-color:var(--b2)}
+
+/* ─── EMPTY ─── */
+.empty{
+  display:flex;flex-direction:column;align-items:center;
+  padding:60px 20px;gap:14px;text-align:center;
+}
+.empty-icon{
+  width:60px;height:60px;background:var(--s1);
+  border:1px solid var(--b1);border-radius:18px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;
+}
+.empty h3{font-size:17px;font-weight:600}
+.empty p{font-size:13px;color:var(--mu2);max-width:280px;line-height:1.65}
+
+/* ─── DEAL CARD ─── */
+.deal-list{display:flex;flex-direction:column;gap:14px}
+
+.deal-card{
+  background:var(--s1);
+  border:1px solid var(--b1);
+  border-radius:var(--r2);
+  overflow:hidden;
+}
+
+/* savings banner */
+.deal-banner{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;
+  background:var(--deal-bg);
+  border-bottom:1px solid var(--deal-border);
+}
+.banner-left{display:flex;align-items:center;gap:10px}
+.savings-big{
+  font-family:var(--fm);font-size:18px;font-weight:500;color:var(--deal);
+}
+.savings-off{
+  font-family:var(--fm);font-size:11px;
+  background:rgba(0,212,170,0.15);color:var(--deal);
+  border:1px solid var(--deal-border);
+  padding:2px 8px;border-radius:20px;
+}
+.asin-tag{font-family:var(--fm);font-size:10px;color:var(--mu)}
+.asin-tag b{color:var(--mu2);font-weight:500}
+
+/* two-col comparison */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr}
+
+.mp-col{padding:16px}
+.mp-col.ebay-col{border-right:1px solid var(--b1)}
+
+.mp-header{display:flex;align-items:center;gap:7px;margin-bottom:12px}
+.mp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.mp-dot.e{background:var(--ebay)}
+.mp-dot.a{background:var(--amz)}
+.mp-tag{font-family:var(--fm);font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:0.7px}
+
+.img-row{display:flex;gap:6px;margin-bottom:12px}
+.pimg{
+  width:64px;height:64px;flex-shrink:0;
+  background:var(--s2);border:1px solid var(--b1);
+  border-radius:8px;object-fit:contain;
+}
+.pimg-ph{
+  width:64px;height:64px;flex-shrink:0;
+  background:var(--s2);border:1px solid var(--b1);
+  border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:24px;color:var(--mu);
+}
+
+.ptitle{
+  font-size:12px;font-weight:500;line-height:1.5;
+  margin-bottom:8px;color:var(--tx);
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.pprice{
+  font-family:var(--fm);font-size:20px;font-weight:500;
+  margin-bottom:6px;
+}
+.ebay-col .pprice{color:var(--ebay)}
+.amz-col  .pprice{color:var(--amz)}
+
+.pill-row{display:flex;flex-wrap:wrap;gap:5px}
+.pill{
+  font-family:var(--fm);font-size:10px;
+  padding:3px 8px;border-radius:20px;
+  border:1px solid var(--b1);color:var(--mu2);
+}
+.pill.new{border-color:rgba(0,212,170,0.3);color:var(--deal)}
+.pill.used{border-color:rgba(255,153,0,0.3);color:var(--amz)}
+.pill.prime{border-color:rgba(255,153,0,0.3);color:var(--amz)}
+
+/* action row */
+.card-actions{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;
+  border-top:1px solid var(--b1);
+  background:var(--s2);
+}
+.link-btns{display:flex;gap:8px}
+.link-btn{
+  font-family:var(--fm);font-size:11px;
+  padding:7px 14px;border-radius:8px;
+  border:1px solid var(--b2);
+  background:transparent;color:var(--tx);
+  text-decoration:none;cursor:pointer;
+  display:flex;align-items:center;gap:5px;
+  transition:background 0.15s;white-space:nowrap;
+}
+.link-btn:hover{background:var(--s3)}
+.link-btn.e{border-color:rgba(229,50,56,0.35);color:var(--ebay)}
+.link-btn.a{border-color:rgba(255,153,0,0.35);color:var(--amz)}
+.toggle-btn{
+  font-family:var(--fm);font-size:11px;color:var(--mu);
+  background:none;border:none;cursor:pointer;
+  display:flex;align-items:center;gap:4px;
+  transition:color 0.15s;
+}
+.toggle-btn:hover{color:var(--tx)}
+
+/* desc section */
+.desc-row{
+  display:none;grid-template-columns:1fr 1fr;
+  border-top:1px solid var(--b1);
+}
+.desc-row.open{display:grid}
+.desc-col{padding:14px 16px}
+.desc-col:first-child{border-right:1px solid var(--b1)}
+.desc-label{font-family:var(--fm);font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:7px}
+.desc-text{font-size:12px;line-height:1.7;color:var(--mu2)}
+
+/* mobile stacking */
+@media(max-width:500px){
+  .compare-grid{grid-template-columns:1fr}
+  .mp-col.ebay-col{border-right:none;border-bottom:1px solid var(--b1)}
+  .desc-row.open{grid-template-columns:1fr}
+  .desc-col:first-child{border-right:none;border-bottom:1px solid var(--b1)}
+  .card-actions{flex-direction:column;gap:10px;align-items:flex-start}
+  .deal-banner{flex-direction:column;align-items:flex-start;gap:6px}
+}
+
+/* scrollbar */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:3px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon">↕</div>
+    <div class="logo-text">Deal<span>Diff</span></div>
+  </div>
+  <div class="nav-pill">AI-Powered</div>
+</nav>
+
+<div class="hero">
+  <div class="hero-label">Price Intelligence</div>
+  <h2>Find eBay deals that beat Amazon</h2>
+  <p>Scans both marketplaces in real time and surfaces identical products where eBay is significantly cheaper.</p>
+
+  <div class="filter-card">
+    <div class="filters-row">
+      <div class="fg">
+        <label>Category</label>
+        <select id="fc">
+          <option value="electronics">Electronics</option>
+          <option value="computers">Computers & Tablets</option>
+          <option value="cameras">Cameras & Photo</option>
+          <option value="video-games">Video Games</option>
+          <option value="tools">Tools & Home Improvement</option>
+          <option value="sports">Sports & Outdoors</option>
+          <option value="toys">Toys & Games</option>
+          <option value="home-kitchen">Home & Kitchen</option>
+          <option value="health">Health & Personal Care</option>
+          <option value="automotive">Automotive</option>
+          <option value="musical-instruments">Musical Instruments</option>
+          <option value="office">Office Products</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>eBay Condition</label>
+        <select id="fd">
+          <option value="any">Any Condition</option>
+          <option value="new">New</option>
+          <option value="open-box">Open Box</option>
+          <option value="refurbished">Certified Refurbished</option>
+          <option value="used-like-new">Used — Like New</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label>Minimum Price Drop</label>
+      <select id="fs">
+        <option value="40" selected>40%+ cheaper than Amazon</option>
+        <option value="50">50%+ cheaper than Amazon</option>
+        <option value="60">60%+ cheaper than Amazon</option>
+        <option value="70">70%+ cheaper than Amazon</option>
+        <option value="80">80%+ cheaper than Amazon</option>
+        <option value="90">90%+ cheaper than Amazon</option>
+        <option value="0">Any savings — show all deals</option>
+      </select>
+    </div>
+    <button class="search-btn" id="sbtn" onclick="runSearch()">Find Deals →</button>
+  </div>
+</div>
+
+<div class="status-wrap">
+  <div class="status-bar" id="sbar">
+    <div class="spinner"></div>
+    <span class="status-text" id="stxt">Scanning listings...</span>
+  </div>
+  <div class="error-bar" id="ebar">
+    <span>⚠</span>
+    <span id="etxt">Something went wrong. Try again.</span>
+  </div>
+</div>
+
+<div class="results-wrap">
+  <div class="results-meta" id="rmeta" style="display:none">
+    <div class="results-count">Found <b id="rcount">0</b> deals</div>
+    <div class="sort-row">
+      <div class="sort-btn on" data-sort="savings" onclick="doSort(this,'savings')">Savings %</div>
+      <div class="sort-btn" data-sort="price"   onclick="doSort(this,'price')">eBay Price</div>
+      <div class="sort-btn" data-sort="amount"  onclick="doSort(this,'amount')">$ Saved</div>
+    </div>
+  </div>
+
+  <div class="empty" id="empty">
+    <div class="empty-icon">🔍</div>
+    <h3>Ready to hunt deals</h3>
+    <p>Pick a category and minimum discount, then tap Find Deals to scan both marketplaces.</p>
+  </div>
+
+  <div class="deal-list" id="dlist"></div>
+</div>
+
+<script>
+const CAT={
+  electronics:'Electronics',computers:'Computers & Tablets',cameras:'Cameras & Photo',
+  'video-games':'Video Games',tools:'Tools & Home Improvement',sports:'Sports & Outdoors',
+  toys:'Toys & Games','home-kitchen':'Home & Kitchen',health:'Health & Personal Care',
+  automotive:'Automotive','musical-instruments':'Musical Instruments',office:'Office Products'
+};
+const COND={
+  any:'any condition',new:'New',
+  'open-box':'Open Box',refurbished:'Certified Refurbished','used-like-new':'Used Like New'
+};
+
+let allDeals=[];
+
+function ss(id,cls,on){document.getElementById(id).classList.toggle(cls,on)}
+function setStatus(t){document.getElementById('stxt').textContent=t;ss('sbar','on',true)}
+function hideStatus(){ss('sbar','on',false)}
+function showError(t){document.getElementById('etxt').textContent=t;ss('ebar','on',true)}
+function hideError(){ss('ebar','on',false)}
+
+async function runSearch(){
+  const cat=document.getElementById('fc').value;
+  const cond=document.getElementById('fd').value;
+  const minPct=parseInt(document.getElementById('fs').value);
+  const btn=document.getElementById('sbtn');
+
+  hideError();
+  document.getElementById('dlist').innerHTML='';
+  document.getElementById('rmeta').style.display='none';
+  document.getElementById('empty').style.display='none';
+  btn.disabled=true;btn.textContent='Searching...';
+
+  const catLabel=CAT[cat];
+  const condLabel=COND[cond];
+
+  const searchPrompt=`You are a deal-hunting assistant. Find real products currently listed on BOTH eBay AND Amazon where eBay is at least ${minPct>0?minPct+'%':'any amount'} cheaper.
+
+Category: ${catLabel}
+Condition on eBay: ${condLabel}
+Minimum savings: ${minPct>0?minPct+'%':'no minimum'}
+
+STEPS:
+1. Search: site:ebay.com ${catLabel} ${condLabel!=='any condition'?condLabel:''} buy it now
+2. Find real item listings at ebay.com/itm/ URLs with actual prices
+3. For each eBay item, search for the same product model on Amazon and get its price + ASIN from the URL (/dp/XXXXXXXXX)
+4. Calculate savings percentage: (amazon_price - ebay_price) / amazon_price * 100
+5. Keep only deals where eBay is ${minPct>0?'at least '+minPct+'% cheaper':'cheaper'}
+6. Return 4-6 deals
+
+CRITICAL: Your ENTIRE response must be ONLY valid JSON. Start with { end with }. No text before or after. No markdown. No backticks. No explanation.
+
+JSON structure:
+{"deals":[{"title":"Product name","asin":"B0XXXXXXX or null","ebay":{"title":"Full eBay title","url":"https://www.ebay.com/itm/ITEMID","price":49.99,"condition":"condition text","seller_rating":null,"images":[],"description":"1-2 sentence eBay description."},"amazon":{"title":"Full Amazon title","url":"https://www.amazon.com/dp/ASIN","price":99.99,"prime":true,"images":[],"description":"1-2 sentence Amazon description."},"savings_pct":50,"savings_amount":50.00}]}`;
+
+  try{
+    setStatus('Scanning eBay listings...');
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:8000,
+        tools:[{type:'web_search_20250305',name:'web_search'}],
+        system:'You are a product deal-finder that searches eBay and Amazon for price discrepancies. You always complete the task and never give up. When instructed to output JSON, you respond with ONLY valid JSON — nothing before the opening brace, nothing after the closing brace, no markdown fences.',
+        messages:[{role:'user',content:searchPrompt}]
+      })
+    });
+    if(!r.ok) throw new Error('API error '+r.status);
+    const d=await r.json();
+
+    setStatus('Comparing prices...');
+    let txt=d.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+
+    // if no JSON found, send follow-up
+    if(!txt.includes('"deals"')&&!txt.includes('"ebay"')){
+      setStatus('Formatting results...');
+      const r2=await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:4000,
+          system:'You output ONLY valid JSON. Nothing before {. Nothing after }. No markdown.',
+          messages:[
+            {role:'user',content:searchPrompt},
+            {role:'assistant',content:txt||'I found some products.'},
+            {role:'user',content:'Now output ONLY the JSON starting with { — no explanation, no preamble, no markdown fences.'}
+          ]
+        })
+      });
+      const d2=await r2.json();
+      txt=d2.content.filter(b=>b.type==='text').map(b=>b.text).join('');
+    }
+
+    const parsed=extractJSON(txt);
+    if(!parsed) throw new Error('No deals found for this category right now. Try a different category or lower the savings %.');
+
+    let deals=(parsed.deals||[]);
+    if(minPct>0) deals=deals.filter(d=>(d.savings_pct||0)>=minPct);
+
+    if(!deals.length){
+      hideStatus();
+      document.getElementById('empty').style.display='flex';
+      document.getElementById('empty').querySelector('h3').textContent='No deals found';
+      document.getElementById('empty').querySelector('p').textContent=
+        `No ${minPct}%+ deals found in ${catLabel} right now. Try a lower savings threshold or different category.`;
+      return;
+    }
+
+    allDeals=deals;
+    renderDeals(deals);
+  }catch(e){
+    hideStatus();
+    showError(e.message||'Search failed. Please try again.');
+    document.getElementById('empty').style.display='flex';
+  }finally{
+    btn.disabled=false;btn.textContent='Find Deals →';
+    hideStatus();
+  }
+}
+
+function extractJSON(raw){
+  const strategies=[
+    ()=>JSON.parse(raw.trim()),
+    ()=>{const m=raw.match(/```(?:json)?\s*([\s\S]*?)```/i);return m?JSON.parse(m[1].trim()):null},
+    ()=>{const s=raw.indexOf('{'),e=raw.lastIndexOf('}');return(s>-1&&e>-1)?JSON.parse(raw.slice(s,e+1)):null},
+    ()=>{const m=raw.match(/"deals"\s*:\s*(\[[\s\S]*?\])\s*[}\]]/);return m?JSON.parse('{"deals":'+m[1]+'}'):null},
+    ()=>JSON.parse(raw.replace(/^[^{[]*/,'').replace(/[^}\]]*$/,''))
+  ];
+  for(const fn of strategies){
+    try{const r=fn();if(r&&(r.deals||Array.isArray(r)))return r}catch(_){}
+  }
+  return null;
+}
+
+function doSort(el,by){
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  const sorted=[...allDeals].sort((a,b)=>{
+    if(by==='savings') return (b.savings_pct||0)-(a.savings_pct||0);
+    if(by==='price')   return (a.ebay?.price||0)-(b.ebay?.price||0);
+    if(by==='amount')  return (b.savings_amount||0)-(a.savings_amount||0);
+    return 0;
+  });
+  renderDeals(sorted);
+}
+
+function renderDeals(deals){
+  const list=document.getElementById('dlist');
+  list.innerHTML='';
+  document.getElementById('rcount').textContent=deals.length;
+  document.getElementById('rmeta').style.display='flex';
+  document.getElementById('empty').style.display='none';
+  deals.forEach((deal,i)=>list.appendChild(buildCard(deal,i)));
+}
+
+function buildCard(deal,i){
+  const eb=deal.ebay||{},am=deal.amazon||{};
+  const pct=Math.round(deal.savings_pct||0);
+  const amt=Number(deal.savings_amount||0).toFixed(2);
+  const asin=deal.asin;
+
+  const condCls=(eb.condition||'').toLowerCase().includes('new')?'new':'used';
+
+  function imgs(arr){
+    if(!arr||!arr.length) return `<div class="pimg-ph">📦</div>`;
+    return arr.slice(0,1).map(u=>`<img class="pimg" src="${u}" alt="" onerror="this.style.display='none'">`).join('');
+  }
+
+  const card=document.createElement('div');
+  card.className='deal-card';
+  card.innerHTML=`
+    <div class="deal-banner">
+      <div class="banner-left">
+        <span class="savings-big">$${amt} off</span>
+        <span class="savings-off">${pct}% cheaper</span>
+      </div>
+      ${asin?`<div class="asin-tag">ASIN <b>${asin}</b></div>`:''}
+    </div>
+
+    <div class="compare-grid">
+      <div class="mp-col ebay-col">
+        <div class="mp-header"><div class="mp-dot e"></div><span class="mp-tag">eBay</span></div>
+        <div class="img-row">${imgs(eb.images)}</div>
+        <div class="ptitle">${eb.title||deal.title||'—'}</div>
+        <div class="pprice">${eb.price!=null?'$'+Number(eb.price).toFixed(2):'N/A'}</div>
+        <div class="pill-row">
+          <span class="pill ${condCls}">${eb.condition||'Unknown'}</span>
+          ${eb.seller_rating?`<span class="pill">${eb.seller_rating}</span>`:''}
+        </div>
+      </div>
+      <div class="mp-col amz-col">
+        <div class="mp-header"><div class="mp-dot a"></div><span class="mp-tag">Amazon</span></div>
+        <div class="img-row">${imgs(am.images)}</div>
+        <div class="ptitle">${am.title||deal.title||'—'}</div>
+        <div class="pprice">${am.price!=null?'$'+Number(am.price).toFixed(2):'N/A'}</div>
+        <div class="pill-row">
+          <span class="pill new">New</span>
+          ${am.prime?`<span class="pill prime">Prime</span>`:''}
+        </div>
+      </div>
+    </div>
+
+    <div class="card-actions">
+      <div class="link-btns">
+        ${eb.url?`<a class="link-btn e" href="${eb.url}" target="_blank">eBay ↗</a>`:''}
+        ${am.url?`<a class="link-btn a" href="${am.url}" target="_blank">Amazon ↗</a>`:''}
+      </div>
+      <button class="toggle-btn" onclick="toggleDesc(${i})">
+        <span id="tarrow-${i}">▸</span> Descriptions
+      </button>
+    </div>
+
+    <div class="desc-row" id="desc-${i}">
+      <div class="desc-col">
+        <div class="desc-label">eBay</div>
+        <div class="desc-text">${eb.description||'No description available.'}</div>
+      </div>
+      <div class="desc-col">
+        <div class="desc-label">Amazon</div>
+        <div class="desc-text">${am.description||'No description available.'}</div>
+      </div>
+    </div>`;
+  return card;
+}
+
+function toggleDesc(i){
+  const d=document.getElementById('desc-'+i);
+  const open=d.classList.toggle('open');
+  document.getElementById('tarrow-'+i).textContent=open?'▾':'▸';
+}
+</script>
+</body>
+</html>
