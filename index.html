@@ -466,7 +466,7 @@ JSON structure:
 
   try{
     setStatus('Scanning eBay listings...');
-    const r=await fetch('https://api.anthropic.com/v1/messages',{
+    const r=await fetch('/api/proxy',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
@@ -486,7 +486,7 @@ JSON structure:
     // if no JSON found, send follow-up
     if(!txt.includes('"deals"')&&!txt.includes('"ebay"')){
       setStatus('Formatting results...');
-      const r2=await fetch('https://api.anthropic.com/v1/messages',{
+      const r2=await fetch('/api/proxy',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({
