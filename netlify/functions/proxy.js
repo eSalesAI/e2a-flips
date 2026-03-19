@@ -25,7 +25,7 @@ exports.handler = async function(event) {
 
     // Build a clean request — strip anything that could cause a 400
     const payload = {
-      model: 'claude-sonnet-4-5-20250929',
+      model: 'claude-sonnet-4-6',
       max_tokens: 4000,
       system: incoming.system || '',
       messages: incoming.messages,
